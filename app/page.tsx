@@ -35,6 +35,7 @@ import {
   Building
 } from "lucide-react";
 import { colors } from "@/lib/colors";
+import PartnerMarquee from "@/components/PartnerMarquee";
 
 // Scroll animation hook
 const useScrollAnimation = () => {
@@ -465,23 +466,8 @@ export default function AboutServicePage() {
 
           {/* Partner Tools */}
           <div className="mt-12 sm:mt-20">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 opacity-60 mb-6">
-              {[
-                { name: 'Webflow', icon: '🌊' },
-                { name: 'Stripe', icon: '💳' },
-                { name: 'Supabase', icon: '🗄️' },
-                { name: 'GitHub', icon: '🐙' },
-                { name: 'Cursor AI', icon: '🤖' },
-                { name: 'Google Ads', icon: '📊' }
-              ].map((tool, index) => (
-                <div key={tool.name} className="flex flex-col items-center space-y-2 p-3 rounded-xl backdrop-blur-sm" style={{ backgroundColor: `${colors.background}20` }}>
-                  <span className="text-2xl">{tool.icon}</span>
-                  <span className="text-xs sm:text-sm font-medium text-center" style={{ color: colors.background }}>
-                    {tool.name}
-                  </span>
-                </div>
-              ))}
-            </div>
+            {/* Replace old grid with PartnerMarquee */}
+            <PartnerMarquee />
             <Button 
               variant="outline" 
               className="rounded-full text-xs sm:text-sm mx-auto block"

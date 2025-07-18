@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,26 +29,6 @@ const steps = [
   { title: 'Kommunikation & Zusammenarbeit' },
 ];
 
-const Step1Schema = z.object({
-  unternehmens_name: z.string().min(1, 'Pflichtfeld'),
-  kurzbeschreibung: z.string().min(1, 'Pflichtfeld'),
-  zielgruppe: z.string().min(1, 'Pflichtfeld'),
-  unterscheidung_von_konkurrenz: z.string().optional(),
-  bestehende_website: z.boolean(),
-  bestehende_website_link: z.string().url('Ungültige URL').optional().or(z.literal('')),
-  was_gefaellt_an_alter_webseite: z.string().optional(),
-  was_gefaellt_nicht: z.string().optional(),
-});
-
-type Step1Type = z.infer<typeof Step1Schema>;
-
-const Step2Schema = z.object({
-  webseiten_ziele: z.array(z.string()).min(1, 'Bitte mindestens ein Ziel auswählen'),
-  konkrete_kennzahlen: z.string().optional(),
-});
-
-type Step2Type = z.infer<typeof Step2Schema>;
-
 const webseitenZieleOptions = [
   'Neukunden',
   'Vertrauen',
@@ -55,15 +37,6 @@ const webseitenZieleOptions = [
   'Terminbuchung',
   'anderes',
 ];
-
-// Step 3: Inhalte & Struktur
-const Step3Schema = z.object({
-  geplante_seiten: z.array(z.string()).min(1, 'Mindestens eine Seite angeben'),
-  texte_vorhanden: z.boolean(),
-  bilder_vorhanden: z.boolean(),
-  fokus_inhalte: z.string().optional(),
-});
-type Step3Type = z.infer<typeof Step3Schema>;
 const geplanteSeitenOptions = [
   'Start',
   'Über uns',
@@ -77,15 +50,6 @@ const geplanteSeitenOptions = [
   'FAQ',
   'Sonstiges',
 ];
-
-// Step 4: Design & Stil
-const Step4Schema = z.object({
-  logo_vorhanden: z.boolean(),
-  farben_schriftwuensche: z.string().optional(),
-  stilrichtung: z.string().min(1, 'Bitte Stilrichtung wählen'),
-  beispiellinks: z.array(z.string().url('Ungültige URL')).optional(),
-});
-type Step4Type = z.infer<typeof Step4Schema>;
 const stilrichtungOptions = [
   'modern',
   'klassisch',
@@ -98,13 +62,6 @@ const stilrichtungOptions = [
   'exklusiv',
   'andere',
 ];
-
-// Step 5: Technische Funktionen
-const Step5Schema = z.object({
-  benoetigte_funktionen: z.array(z.string()).min(1, 'Mindestens eine Funktion wählen'),
-  drittanbieter: z.array(z.string()).optional(),
-});
-type Step5Type = z.infer<typeof Step5Schema>;
 const funktionenOptions = [
   'Kontaktformular',
   'Shop',
@@ -123,30 +80,6 @@ const drittanbieterOptions = [
   'Mailchimp',
   'andere',
 ];
-
-// Step 6: Pflege & Support
-const Step6Schema = z.object({
-  selbst_pflegen: z.boolean(),
-  support_erwuenscht: z.boolean(),
-  seo_betreuung: z.boolean().optional(),
-});
-type Step6Type = z.infer<typeof Step6Schema>;
-
-// Step 7: Projektzeit & Ansprechpartner
-const Step7Schema = z.object({
-  go_live_wunschdatum: z.string().min(1, 'Bitte Datum wählen'),
-  projektverantwortlicher_name: z.string().min(1, 'Pflichtfeld'),
-  projektverantwortlicher_kontakt: z.string().min(1, 'Pflichtfeld'),
-  budgetrahmen: z.string().optional(),
-});
-type Step7Type = z.infer<typeof Step7Schema>;
-
-// Step 8: Kommunikation & Zusammenarbeit
-const Step8Schema = z.object({
-  kommunikationsweg: z.array(z.string()).min(1, 'Mindestens einen Weg wählen'),
-  reaktionszeit_erwartung: z.string().optional(),
-});
-type Step8Type = z.infer<typeof Step8Schema>;
 const kommunikationswegOptions = [
   'E-Mail',
   'Telefon',
@@ -154,161 +87,143 @@ const kommunikationswegOptions = [
   'Videocall',
 ];
 
+// Zod schema for all steps (fields optional, step validation below)
+const fullSchema = z.object({
+  // Step 1
+  firma: z.string().min(1, 'Pflichtfeld'),
+  beschreibung: z.string().min(1, 'Pflichtfeld'),
+  zielgruppe: z.string().min(1, 'Pflichtfeld'),
+  website_vorhanden: z.boolean(),
+  stilvorbilder: z.string().optional(),
+  was_gefaellt_gefaellt_nicht: z.string().optional(),
+  // Step 2
+  ziel_der_website: z.array(z.string()).min(1, 'Bitte mindestens ein Ziel auswählen'),
+  // Step 3
+  seiten_geplant: z.array(z.string()).min(1, 'Mindestens eine Seite angeben'),
+  texte_bilder_vorhanden: z.boolean(),
+  fokus_inhalte: z.string().optional(),
+  // Step 4
+  logo_farben_vorhanden: z.boolean(),
+  design_wunsch: z.string().min(1, 'Bitte Stilrichtung wählen'),
+  beispiellinks: z.string().optional(),
+  // Step 5
+  features_gewuenscht: z.array(z.string()).min(1, 'Mindestens eine Funktion wählen'),
+  drittanbieter: z.array(z.string()).optional(),
+  // Step 6
+  selbst_pflegen: z.boolean(),
+  laufende_betreuung: z.boolean(),
+  // Step 7
+  deadline: z.string().min(1, 'Bitte Datum wählen'),
+  projekt_verantwortlich: z.string().min(1, 'Pflichtfeld'),
+  budget: z.string().optional(),
+  // Step 8
+  kommunikationsweg: z.array(z.string()).min(1, 'Mindestens einen Weg wählen'),
+  feedback_geschwindigkeit: z.string().optional(),
+});
+type FullFormType = z.infer<typeof fullSchema>;
+
+const stepFieldMap: Record<number, (keyof FullFormType)[]> = {
+  0: [
+    'firma',
+    'beschreibung',
+    'zielgruppe',
+    'website_vorhanden',
+    'stilvorbilder',
+    'was_gefaellt_gefaellt_nicht',
+  ],
+  1: ['ziel_der_website'],
+  2: ['seiten_geplant', 'texte_bilder_vorhanden', 'fokus_inhalte'],
+  3: ['logo_farben_vorhanden', 'design_wunsch', 'beispiellinks'],
+  4: ['features_gewuenscht', 'drittanbieter'],
+  5: ['selbst_pflegen', 'laufende_betreuung'],
+  6: ['deadline', 'projekt_verantwortlich', 'budget'],
+  7: ['kommunikationsweg', 'feedback_geschwindigkeit'],
+};
+
 export default function CustomerStepperForm() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [showWebsiteLink, setShowWebsiteLink] = useState(false);
-  const [step1Data, setStep1Data] = useState<Step1Type | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const methods = useForm<Step1Type>({
-    resolver: zodResolver(Step1Schema),
+  const methods = useForm<FullFormType>({
+    resolver: zodResolver(fullSchema),
     defaultValues: {
-      unternehmens_name: '',
-      kurzbeschreibung: '',
+      firma: '',
+      beschreibung: '',
       zielgruppe: '',
-      unterscheidung_von_konkurrenz: '',
-      bestehende_website: false,
-      bestehende_website_link: '',
-      was_gefaellt_an_alter_webseite: '',
-      was_gefaellt_nicht: '',
-    },
-    mode: 'onChange',
-  });
-
-  const step2Methods = useForm<Step2Type>({
-    resolver: zodResolver(Step2Schema),
-    defaultValues: {
-      webseiten_ziele: [],
-      konkrete_kennzahlen: '',
-    },
-    mode: 'onChange',
-  });
-
-  // Add useForm hooks for each step
-  const step3Methods = useForm<Step3Type>({
-    resolver: zodResolver(Step3Schema),
-    defaultValues: {
-      geplante_seiten: [],
-      texte_vorhanden: false,
-      bilder_vorhanden: false,
+      website_vorhanden: false,
+      stilvorbilder: '',
+      was_gefaellt_gefaellt_nicht: '',
+      ziel_der_website: [],
+      seiten_geplant: [],
+      texte_bilder_vorhanden: false,
       fokus_inhalte: '',
-    },
-    mode: 'onChange',
-  });
-  const step4Methods = useForm<Step4Type>({
-    resolver: zodResolver(Step4Schema),
-    defaultValues: {
-      logo_vorhanden: false,
-      farben_schriftwuensche: '',
-      stilrichtung: '',
-      beispiellinks: [],
-    },
-    mode: 'onChange',
-  });
-  const step5Methods = useForm<Step5Type>({
-    resolver: zodResolver(Step5Schema),
-    defaultValues: {
-      benoetigte_funktionen: [],
+      logo_farben_vorhanden: false,
+      design_wunsch: '',
+      beispiellinks: '',
+      features_gewuenscht: [],
       drittanbieter: [],
-    },
-    mode: 'onChange',
-  });
-  const step6Methods = useForm<Step6Type>({
-    resolver: zodResolver(Step6Schema),
-    defaultValues: {
       selbst_pflegen: false,
-      support_erwuenscht: false,
-      seo_betreuung: false,
-    },
-    mode: 'onChange',
-  });
-  const step7Methods = useForm<Step7Type>({
-    resolver: zodResolver(Step7Schema),
-    defaultValues: {
-      go_live_wunschdatum: '',
-      projektverantwortlicher_name: '',
-      projektverantwortlicher_kontakt: '',
-      budgetrahmen: '',
-    },
-    mode: 'onChange',
-  });
-  const step8Methods = useForm<Step8Type>({
-    resolver: zodResolver(Step8Schema),
-    defaultValues: {
+      laufende_betreuung: false,
+      deadline: '',
+      projekt_verantwortlich: '',
+      budget: '',
       kommunikationsweg: [],
-      reaktionszeit_erwartung: '',
+      feedback_geschwindigkeit: '',
     },
     mode: 'onChange',
   });
 
-  const nextStep = async () => {
-    if (currentStep === 0) {
-      const valid = await methods.trigger();
-      if (valid) {
-        setStep1Data(methods.getValues());
-        setCurrentStep(1);
-      }
-    } else if (currentStep === 1) {
-      const valid = await step2Methods.trigger();
-      if (valid) setCurrentStep(2);
-    } else if (currentStep === 2) {
-      const valid = await step3Methods.trigger();
-      if (valid) setCurrentStep(3);
-    } else if (currentStep === 3) {
-      const valid = await step4Methods.trigger();
-      if (valid) setCurrentStep(4);
-    } else if (currentStep === 4) {
-      const valid = await step5Methods.trigger();
-      if (valid) setCurrentStep(5);
-    } else if (currentStep === 5) {
-      const valid = await step6Methods.trigger();
-      if (valid) setCurrentStep(6);
-    } else if (currentStep === 6) {
-      const valid = await step7Methods.trigger();
-      if (valid) setCurrentStep(7);
-    } else if (currentStep === 7) {
-      const valid = await step8Methods.trigger();
-      if (valid) setCurrentStep(8);
-    }
-  };
-  const prevStep = () => setCurrentStep((s) => Math.max(s - 1, 0));
+  async function nextStep() {
+    // Validate only fields for this step
+    const fields = stepFieldMap[currentStep];
+    const valid = await methods.trigger(fields as any);
+    if (valid) setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
+  }
+  function prevStep() {
+    setCurrentStep((s) => Math.max(s - 1, 0));
+  }
 
   async function handleSubmitAll() {
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      // Collect all data from all steps
-      const data = {
-        ...methods.getValues(),
-        ...step2Methods.getValues(),
-        ...step3Methods.getValues(),
-        ...step4Methods.getValues(),
-        ...step5Methods.getValues(),
-        ...step6Methods.getValues(),
-        ...step7Methods.getValues(),
-        ...step8Methods.getValues(),
+      const data = methods.getValues();
+      console.log('Form data:', data);
+      
+      // Convert arrays to comma-separated strings for Supabase
+      const processedData = {
+        ...data,
+        // Convert checkbox arrays to comma-separated strings
+        ziel_der_website: Array.isArray(data.ziel_der_website) 
+          ? data.ziel_der_website.join(', ') 
+          : data.ziel_der_website,
+        seiten_geplant: Array.isArray(data.seiten_geplant) 
+          ? data.seiten_geplant.join(', ') 
+          : data.seiten_geplant,
+        features_gewuenscht: Array.isArray(data.features_gewuenscht) 
+          ? data.features_gewuenscht.join(', ') 
+          : data.features_gewuenscht,
+        drittanbieter: Array.isArray(data.drittanbieter) 
+          ? data.drittanbieter.join(', ') 
+          : data.drittanbieter,
+        kommunikationsweg: Array.isArray(data.kommunikationsweg) 
+          ? data.kommunikationsweg.join(', ') 
+          : data.kommunikationsweg,
       };
-      // Special handling for beispiellinks (split by line if string, else use as array)
-      if (data.beispiellinks) {
-        if (typeof data.beispiellinks === 'string') {
-          data.beispiellinks = (data.beispiellinks as string)
-            .split('\n')
-            .map((l: string) => l.trim())
-            .filter((l: string) => l.length > 0);
-        } else if (Array.isArray(data.beispiellinks)) {
-          data.beispiellinks = data.beispiellinks.filter((l: string) => l.length > 0);
-        }
-      }
-      // Insert into Supabase
-      const { error } = await supabase.from('kunden_projekte').insert([data]);
+      
+      console.log('Processed data for Supabase:', processedData);
+      
+      const { error } = await supabase.from('kunden_projekte').insert([processedData]);
       if (error) {
+        console.error('Supabase error:', error);
         setSubmitError('Fehler beim Speichern: ' + error.message);
       } else {
         setSubmitSuccess(true);
       }
     } catch (e: any) {
+      console.error('Unexpected error:', e);
       setSubmitError('Unbekannter Fehler: ' + (e.message || e.toString()));
     } finally {
       setIsSubmitting(false);
@@ -316,523 +231,388 @@ export default function CustomerStepperForm() {
   }
 
   return (
-    <>
+    <Form {...methods}>
       {/* Stepper Progress */}
-      <div className="flex items-center justify-between mb-8">
-        {steps.map((step, idx) => (
-          <div key={step.title} className="flex-1 flex flex-col items-center">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white mb-1 ${idx === currentStep ? 'bg-blue-600' : 'bg-gray-300'}`}>{idx + 1}</div>
-            <span className={`text-xs text-center ${idx === currentStep ? 'font-semibold text-blue-700' : 'text-gray-500'}`}>{step.title}</span>
-            {idx < steps.length - 1 && <div className="h-1 w-full bg-gray-200 mt-2" />}
-          </div>
-        ))}
-      </div>
+      <div className="mb-8">
+        {/* Desktop Stepper - Horizontal */}
+        <div className="hidden md:flex items-center justify-between">
+          {steps.map((step, idx) => (
+            <div key={step.title} className="flex flex-col items-center" style={{ width: `${100 / steps.length}%` }}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white mb-1 ${idx === currentStep ? 'bg-blue-600' : 'bg-gray-300'}`}>{idx + 1}</div>
+              <span className={`text-xs text-center ${idx === currentStep ? 'font-semibold text-blue-700' : 'text-gray-500'}`}>{step.title}</span>
+              {idx < steps.length - 1 && <div className="h-1 w-full bg-gray-200 mt-2" />}
+            </div>
+          ))}
+        </div>
 
+        {/* Mobile Stepper - Vertical */}
+        <div className="md:hidden">
+          <div className="flex items-center justify-center mb-4">
+            <div className="text-center">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white mb-2 mx-auto ${currentStep === 0 ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                {currentStep + 1}
+              </div>
+              <span className={`text-sm font-medium ${currentStep === 0 ? 'text-blue-700' : 'text-gray-500'}`}>
+                {steps[currentStep].title}
+              </span>
+            </div>
+          </div>
+          
+          {/* Mobile Progress Bar */}
+          <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+            ></div>
+          </div>
+          
+          {/* Mobile Step Indicator */}
+          <div className="flex justify-center space-x-1">
+            {steps.map((_, idx) => (
+              <div 
+                key={idx}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  idx <= currentStep ? 'bg-blue-600' : 'bg-gray-300'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
       {/* Step Content */}
       <div className="mb-8">
         {currentStep === 0 && (
           <div className="space-y-4">
-            <FormField
-              name="unternehmens_name"
-              render={({ field }) => (
+            <FormField name="firma" render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm md:text-base">Unternehmensname *</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="z.B. Webklar GmbH" className="text-sm md:text-base py-3 md:py-2" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField name="beschreibung" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Kurzbeschreibung *</FormLabel>
+                <FormControl>
+                  <Textarea {...field} placeholder="Was macht das Unternehmen?" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField name="zielgruppe" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Zielgruppe *</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Wer soll angesprochen werden?" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField name="website_vorhanden" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Bestehende Website?</FormLabel>
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormDescription>Gibt es bereits eine Website?</FormDescription>
+              </FormItem>
+            )} />
+            {methods.watch('website_vorhanden') && (
+              <FormField name="stilvorbilder" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Unternehmensname *</FormLabel>
+                  <FormLabel>Link zur bestehenden Website</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="z.B. Webklar GmbH" />
+                    <Input {...field} placeholder="https://..." />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
-              )}
-            />
-            <FormField
-              name="kurzbeschreibung"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Kurzbeschreibung *</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} placeholder="Was macht das Unternehmen?" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              name="zielgruppe"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Zielgruppe *</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Wer soll angesprochen werden?" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              name="unterscheidung_von_konkurrenz"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Unterscheidung von Konkurrenz</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Was macht das Unternehmen besonders?" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              name="bestehende_website"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bestehende Website?</FormLabel>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={(checked) => {
-                        field.onChange(checked);
-                        setShowWebsiteLink(checked);
-                      }}
-                    />
-                  </FormControl>
-                  <FormDescription>Gibt es bereits eine Website?</FormDescription>
-                </FormItem>
-              )}
-            />
-            {methods.watch('bestehende_website') && (
-              <FormField
-                name="bestehende_website_link"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Link zur bestehenden Website</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="https://..." />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              )} />
             )}
-            <FormField
-              name="was_gefaellt_an_alter_webseite"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Was gefällt an der alten Website?</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} placeholder="Stärken der aktuellen Seite" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              name="was_gefaellt_nicht"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Was gefällt nicht?</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} placeholder="Schwächen der aktuellen Seite" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormField name="was_gefaellt_gefaellt_nicht" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Was gefällt/gefällt nicht an der alten Website?</FormLabel>
+                <FormControl>
+                  <Textarea {...field} placeholder="Stärken und Schwächen der aktuellen Seite" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
           </div>
         )}
         {currentStep === 1 && (
-          <Form {...step2Methods}>
-            <div className="space-y-4">
-              <FormField
-                name="webseiten_ziele"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ziele der Website *</FormLabel>
-                    <div className="flex flex-wrap gap-3">
-                      {webseitenZieleOptions.map((ziel) => (
-                        <label key={ziel} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            value={ziel}
-                            checked={field.value?.includes(ziel)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                field.onChange([...(field.value || []), ziel]);
-                              } else {
-                                field.onChange((field.value || []).filter((v: string) => v !== ziel));
-                              }
-                            }}
-                            className="accent-blue-600"
-                          />
-                          <span>{ziel}</span>
-                        </label>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="konkrete_kennzahlen"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Konkrete Kennzahlen (optional)</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="z.B. 100 neue Leads/Monat" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </Form>
+          <div className="space-y-4">
+            <FormField name="ziel_der_website" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Ziele der Website *</FormLabel>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:flex-wrap gap-3">
+                  {webseitenZieleOptions.map((ziel) => (
+                    <label key={ziel} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                      <input
+                        type="checkbox"
+                        value={ziel}
+                        checked={field.value?.includes(ziel)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            field.onChange([...(field.value || []), ziel]);
+                          } else {
+                            field.onChange((field.value || []).filter((v: string) => v !== ziel));
+                          }
+                        }}
+                        className="accent-blue-600 w-4 h-4"
+                      />
+                      <span className="text-sm md:text-base">{ziel}</span>
+                    </label>
+                  ))}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )} />
+          </div>
         )}
         {currentStep === 2 && (
-          <Form {...step3Methods}>
-            <div className="space-y-4">
-              <FormField
-                name="geplante_seiten"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Geplante Seiten *</FormLabel>
-                    <div className="flex flex-wrap gap-3">
-                      {geplanteSeitenOptions.map((seite) => (
-                        <label key={seite} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            value={seite}
-                            checked={field.value?.includes(seite)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                field.onChange([...(field.value || []), seite]);
-                              } else {
-                                field.onChange((field.value || []).filter((v: string) => v !== seite));
-                              }
-                            }}
-                            className="accent-blue-600"
-                          />
-                          <span>{seite}</span>
-                        </label>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="texte_vorhanden"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Texte vorhanden?</FormLabel>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="bilder_vorhanden"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Bilder vorhanden?</FormLabel>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="fokus_inhalte"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Fokus-Inhalte (optional)</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} placeholder="Wichtige Schwerpunkte" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </Form>
+          <div className="space-y-4">
+            <FormField name="seiten_geplant" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Geplante Seiten *</FormLabel>
+                <div className="flex flex-wrap gap-3">
+                  {geplanteSeitenOptions.map((seite) => (
+                    <label key={seite} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        value={seite}
+                        checked={field.value?.includes(seite)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            field.onChange([...(field.value || []), seite]);
+                          } else {
+                            field.onChange((field.value || []).filter((v: string) => v !== seite));
+                          }
+                        }}
+                        className="accent-blue-600"
+                      />
+                      <span>{seite}</span>
+                    </label>
+                  ))}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField name="texte_bilder_vorhanden" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Texte/Bilder vorhanden?</FormLabel>
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField name="fokus_inhalte" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fokus-Inhalte (optional)</FormLabel>
+                <FormControl>
+                  <Textarea {...field} placeholder="Wichtige Schwerpunkte" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+          </div>
         )}
         {currentStep === 3 && (
-          <Form {...step4Methods}>
-            <div className="space-y-4">
-              <FormField
-                name="logo_vorhanden"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Logo vorhanden?</FormLabel>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="farben_schriftwuensche"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Farben/Schriftwünsche (optional)</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="z.B. Blau, modern, serifenlos" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="stilrichtung"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Stilrichtung *</FormLabel>
-                    <select {...field} className="w-full border rounded px-2 py-1">
-                      <option value="">Bitte wählen</option>
-                      {stilrichtungOptions.map((stil) => (
-                        <option key={stil} value={stil}>{stil}</option>
-                      ))}
-                    </select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="beispiellinks"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Beispiellinks (optional, mehrere möglich)</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} placeholder="Eine URL pro Zeile" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </Form>
+          <div className="space-y-4">
+            <FormField name="logo_farben_vorhanden" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Logo/Farben vorhanden?</FormLabel>
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField name="design_wunsch" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Design-Wunsch *</FormLabel>
+                <select {...field} className="w-full border rounded px-2 py-1">
+                  <option value="">Bitte wählen</option>
+                  {stilrichtungOptions.map((stil) => (
+                    <option key={stil} value={stil}>{stil}</option>
+                  ))}
+                </select>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField name="beispiellinks" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Beispiellinks (optional, mehrere möglich)</FormLabel>
+                <FormControl>
+                  <Textarea {...field} placeholder="Eine URL pro Zeile" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+          </div>
         )}
         {currentStep === 4 && (
-          <Form {...step5Methods}>
-            <div className="space-y-4">
-              <FormField
-                name="benoetigte_funktionen"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Benötigte Funktionen *</FormLabel>
-                    <div className="flex flex-wrap gap-3">
-                      {funktionenOptions.map((fkt) => (
-                        <label key={fkt} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            value={fkt}
-                            checked={field.value?.includes(fkt)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                field.onChange([...(field.value || []), fkt]);
-                              } else {
-                                field.onChange((field.value || []).filter((v: string) => v !== fkt));
-                              }
-                            }}
-                            className="accent-blue-600"
-                          />
-                          <span>{fkt}</span>
-                        </label>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="drittanbieter"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Drittanbieter (optional)</FormLabel>
-                    <div className="flex flex-wrap gap-3">
-                      {drittanbieterOptions.map((anbieter) => (
-                        <label key={anbieter} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            value={anbieter}
-                            checked={field.value?.includes(anbieter)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                field.onChange([...(field.value || []), anbieter]);
-                              } else {
-                                field.onChange((field.value || []).filter((v: string) => v !== anbieter));
-                              }
-                            }}
-                            className="accent-blue-600"
-                          />
-                          <span>{anbieter}</span>
-                        </label>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </Form>
+          <div className="space-y-4">
+            <FormField name="features_gewuenscht" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Gewünschte Features *</FormLabel>
+                <div className="flex flex-wrap gap-3">
+                  {funktionenOptions.map((fkt) => (
+                    <label key={fkt} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        value={fkt}
+                        checked={field.value?.includes(fkt)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            field.onChange([...(field.value || []), fkt]);
+                          } else {
+                            field.onChange((field.value || []).filter((v: string) => v !== fkt));
+                          }
+                        }}
+                        className="accent-blue-600"
+                      />
+                      <span>{fkt}</span>
+                    </label>
+                  ))}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField name="drittanbieter" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Drittanbieter (optional)</FormLabel>
+                <div className="flex flex-wrap gap-3">
+                  {drittanbieterOptions.map((anbieter) => (
+                    <label key={anbieter} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        value={anbieter}
+                        checked={field.value?.includes(anbieter)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            field.onChange([...(field.value || []), anbieter]);
+                          } else {
+                            field.onChange((field.value || []).filter((v: string) => v !== anbieter));
+                          }
+                        }}
+                        className="accent-blue-600"
+                      />
+                      <span>{anbieter}</span>
+                    </label>
+                  ))}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )} />
+          </div>
         )}
         {currentStep === 5 && (
-          <Form {...step6Methods}>
-            <div className="space-y-4">
-              <FormField
-                name="selbst_pflegen"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Selbst pflegen?</FormLabel>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="support_erwuenscht"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Support erwünscht?</FormLabel>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="seo_betreuung"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>SEO-Betreuung (optional)</FormLabel>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </Form>
+          <div className="space-y-4">
+            <FormField name="selbst_pflegen" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Selbst pflegen?</FormLabel>
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField name="laufende_betreuung" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Laufende Betreuung erwünscht?</FormLabel>
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+          </div>
         )}
         {currentStep === 6 && (
-          <Form {...step7Methods}>
-            <div className="space-y-4">
-              <FormField
-                name="go_live_wunschdatum"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Go-Live Wunschdatum *</FormLabel>
-                    <FormControl>
-                      <Input {...field} type="date" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="projektverantwortlicher_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Projektverantwortlicher Name *</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="projektverantwortlicher_kontakt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Projektverantwortlicher Kontakt *</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="E-Mail oder Telefon" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="budgetrahmen"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Budgetrahmen (optional)</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="z.B. 5.000–10.000 €" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </Form>
-        )}
-        {currentStep === 7 && (
-          <Form {...step8Methods}>
-            <div className="space-y-4">
-              <FormField
-                name="kommunikationsweg"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kommunikationsweg *</FormLabel>
-                    <div className="flex flex-wrap gap-3">
-                      {kommunikationswegOptions.map((weg) => (
-                        <label key={weg} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            value={weg}
-                            checked={field.value?.includes(weg)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                field.onChange([...(field.value || []), weg]);
-                              } else {
-                                field.onChange((field.value || []).filter((v: string) => v !== weg));
-                              }
-                            }}
-                            className="accent-blue-600"
-                          />
-                          <span>{weg}</span>
-                        </label>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="reaktionszeit_erwartung"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Reaktionszeit-Erwartung (optional)</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="z.B. innerhalb von 24h" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </Form>
-        )}
-        {currentStep > 7 && !submitSuccess && (
-          <div className="flex flex-col items-center justify-center min-h-[120px]">
-            <span className="text-green-600 font-semibold mb-4">Alle Daten eingegeben!</span>
-            <button
-              type="button"
-              className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-              onClick={handleSubmitAll}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Speichern ...' : 'Daten speichern & Projekt anlegen'}
-            </button>
-            {submitError && <div className="text-red-600 mt-4">{submitError}</div>}
+          <div className="space-y-4">
+            <FormField name="deadline" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Deadline *</FormLabel>
+                <FormControl>
+                  <Input {...field} type="date" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField name="projekt_verantwortlich" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Projektverantwortlicher Name *</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Name" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField name="budget" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Budget (optional)</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="z.B. 5.000–10.000 €" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
           </div>
+        )}
+        {currentStep === 7 && !submitSuccess && (
+          <>
+            <div className="space-y-4">
+              <FormField name="kommunikationsweg" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Kommunikationsweg *</FormLabel>
+                  <div className="flex flex-wrap gap-3">
+                    {kommunikationswegOptions.map((weg) => (
+                      <label key={weg} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          value={weg}
+                          checked={field.value?.includes(weg)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              field.onChange([...(field.value || []), weg]);
+                            } else {
+                              field.onChange((field.value || []).filter((v: string) => v !== weg));
+                            }
+                          }}
+                          className="accent-blue-600"
+                        />
+                        <span>{weg}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField name="feedback_geschwindigkeit" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Feedback-Geschwindigkeit (optional)</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="z.B. innerhalb von 24h" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
+            <div className="flex flex-col items-center justify-center min-h-[80px] mt-6">
+              <button
+                type="button"
+                className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                onClick={handleSubmitAll}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Speichern ...' : 'Daten speichern & Projekt anlegen'}
+              </button>
+              {submitError && <div className="text-red-600 mt-4">{submitError}</div>}
+            </div>
+          </>
         )}
         {submitSuccess && (
           <div className="flex flex-col items-center justify-center min-h-[120px]">
@@ -841,26 +621,26 @@ export default function CustomerStepperForm() {
           </div>
         )}
       </div>
-
       {/* Navigation Buttons */}
-      <div className="flex justify-between">
+      <div className="flex justify-between mt-8">
         <button
           type="button"
-          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+          className="px-4 py-3 md:px-6 md:py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 transition-all duration-200 text-sm md:text-base font-medium"
           onClick={prevStep}
           disabled={currentStep === 0}
         >
           Zurück
         </button>
-        <button
-          type="button"
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-          onClick={nextStep}
-          disabled={currentStep !== 0 && currentStep === steps.length - 1}
-        >
-          Weiter
-        </button>
+        {currentStep < steps.length - 1 && (
+          <button
+            type="button"
+            className="px-4 py-3 md:px-6 md:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-all duration-200 text-sm md:text-base font-medium"
+            onClick={nextStep}
+          >
+            Weiter
+          </button>
+        )}
       </div>
-    </>
+    </Form>
   );
 } 
