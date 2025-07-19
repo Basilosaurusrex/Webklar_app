@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, CheckCircle, X } from "lucide-react";
-import { supabase } from '@/lib/supabaseClient';
 import { colors } from '@/lib/colors';
 
 interface AppointmentSlot {
@@ -19,10 +18,8 @@ interface AppointmentCalendarProps {
 }
 
 export default function AppointmentCalendar({ onSlotSelect, selectedSlot }: AppointmentCalendarProps) {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [availableSlots, setAvailableSlots] = useState<AppointmentSlot[]>([]);
   const [loading, setLoading] = useState(false);
-  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
 
   // Generate available time slots (2-hour slots, Mo-Fr 9-17 Uhr)
   const generateTimeSlots = () => {
@@ -59,34 +56,7 @@ export default function AppointmentCalendar({ onSlotSelect, selectedSlot }: Appo
     return dates;
   };
 
-  // Fetch booked appointments from Supabase
-  const fetchBookedSlots = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('kunden_projekte')
-        .select('termin_datum')
-        .not('termin_datum', 'is', null);
-
-      if (error) {
-        console.error('Error fetching booked slots:', error);
-        return;
-      }
-
-      const booked = data?.map(item => {
-        const date = new Date(item.termin_datum);
-        return `${date.toISOString().split('T')[0]}_${date.getHours().toString().padStart(2, '0')}:00`;
-      }) || [];
-
-      setBookedSlots(booked);
-    } catch (error) {
-      console.error('Error fetching booked slots:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Generate available slots
+  // Generate available slots (simplified without Supabase for now)
   const generateAvailableSlots = () => {
     const dates = generateAvailableDates();
     const timeSlots = generateTimeSlots();
@@ -94,14 +64,12 @@ export default function AppointmentCalendar({ onSlotSelect, selectedSlot }: Appo
 
     dates.forEach(date => {
       timeSlots.forEach(time => {
-        const slotKey = `${date.toISOString().split('T')[0]}_${time}`;
-        const isBooked = bookedSlots.includes(slotKey);
-        
+        // For now, make all slots available (we'll add Supabase integration later)
         slots.push({
           date: new Date(date),
           time,
-          available: !isBooked,
-          booked: isBooked
+          available: true,
+          booked: false
         });
       });
     });
@@ -110,14 +78,13 @@ export default function AppointmentCalendar({ onSlotSelect, selectedSlot }: Appo
   };
 
   useEffect(() => {
-    fetchBookedSlots();
-  }, []);
-
-  useEffect(() => {
-    if (bookedSlots.length > 0) {
+    setLoading(true);
+    // Simulate loading time
+    setTimeout(() => {
       generateAvailableSlots();
-    }
-  }, [bookedSlots]);
+      setLoading(false);
+    }, 500);
+  }, []);
 
   // Group slots by date
   const groupedSlots = availableSlots.reduce((groups, slot) => {
@@ -164,7 +131,7 @@ export default function AppointmentCalendar({ onSlotSelect, selectedSlot }: Appo
           </div>
         ) : (
           <div className="space-y-4">
-            {Object.entries(groupedSlots).map(([dateKey, slots]) => {
+            {Object.entries(groupedSlots).slice(0, 3).map(([dateKey, slots]) => {
               const date = new Date(dateKey);
               const availableSlotsForDate = slots.filter(slot => slot.available);
               
