@@ -25,10 +25,17 @@ export default function AppointmentBooking() {
   const [appointmentData, setAppointmentData] = useState<AppointmentData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [testMode, setTestMode] = useState(true); // Test mode for development
 
   const handleFormSubmit = async (data: AppointmentData) => {
     setAppointmentData(data);
-    setCurrentStep('verification');
+    
+    if (testMode) {
+      // Skip email verification in test mode
+      await handleVerificationComplete();
+    } else {
+      setCurrentStep('verification');
+    }
   };
 
   const handleVerificationComplete = async () => {
@@ -101,6 +108,15 @@ export default function AppointmentBooking() {
 
   return (
     <div className="w-full max-w-4xl mx-auto">
+      {/* Test Mode Indicator */}
+      {testMode && (
+        <div className="mb-4 p-3 rounded-xl border-2 border-yellow-500 bg-yellow-50">
+          <p className="text-sm text-yellow-700">
+            🧪 <strong>Test-Modus aktiv:</strong> E-Mail-Verifizierung wird übersprungen für schnelles Testing.
+          </p>
+        </div>
+      )}
+
       {/* Step Indicator */}
       <div className="mb-8">
         <div className="flex items-center justify-center space-x-4">
@@ -221,7 +237,10 @@ export default function AppointmentBooking() {
             </div>
             
             <p className="text-xs mb-6" style={{ color: colors.secondary }}>
-              Sie erhalten in Kürze eine Bestätigungs-E-Mail mit allen Details zu Ihrem Termin.
+              {testMode ? 
+                'Test-Modus: Termin wurde direkt gespeichert.' : 
+                'Sie erhalten in Kürze eine Bestätigungs-E-Mail mit allen Details zu Ihrem Termin.'
+              }
             </p>
             
             <Button 
