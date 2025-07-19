@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { colors } from "@/lib/colors";
 import PartnerMarquee from "@/components/PartnerMarquee";
+import AppointmentBooking from "@/components/AppointmentBooking";
 import Head from 'next/head';
 import Link from 'next/link';
 
@@ -795,140 +796,10 @@ export default function AboutServicePage() {
               </p>
             </div>
 
-            <div className={`grid md:grid-cols-2 gap-8 transition-all duration-1000 ${
+            <div className={`transition-all duration-1000 ${
               contactInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             }`}>
-              {/* Contact Form */}
-              <div 
-                className="p-6 sm:p-8 rounded-3xl backdrop-blur-sm"
-                style={{ backgroundColor: `${colors.background}F0` }}
-              >
-                <form className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: colors.primary }}>
-                      01 – Wie ist dein Name?
-                    </label>
-                    <input 
-                      type="text" 
-                      className="w-full p-3 rounded-xl border-2 focus:outline-none focus:ring-2"
-                      style={{ 
-                        borderColor: colors.tertiary,
-                        backgroundColor: colors.background,
-                        color: colors.primary
-                      }}
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: colors.primary }}>
-                      02 – Deine Telefonnummer
-                    </label>
-                    <input 
-                      type="tel" 
-                      className="w-full p-3 rounded-xl border-2 focus:outline-none focus:ring-2"
-                      style={{ 
-                        borderColor: colors.tertiary,
-                        backgroundColor: colors.background,
-                        color: colors.primary
-                      }}
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: colors.primary }}>
-                      03 – Dein Unternehmen
-                    </label>
-                    <input 
-                      type="text" 
-                      className="w-full p-3 rounded-xl border-2 focus:outline-none focus:ring-2"
-                      style={{ 
-                        borderColor: colors.tertiary,
-                        backgroundColor: colors.background,
-                        color: colors.primary
-                      }}
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: colors.primary }}>
-                      04 – Deine E-Mail-Adresse
-                    </label>
-                    <input 
-                      type="email" 
-                      className="w-full p-3 rounded-xl border-2 focus:outline-none focus:ring-2"
-                      style={{ 
-                        borderColor: colors.tertiary,
-                        backgroundColor: colors.background,
-                        color: colors.primary
-                      }}
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: colors.primary }}>
-                      05 – Erzähl uns kurz von deinem Vorhaben
-                    </label>
-                    <textarea 
-                      rows={4}
-                      className="w-full p-3 rounded-xl border-2 focus:outline-none focus:ring-2"
-                      style={{ 
-                        borderColor: colors.tertiary,
-                        backgroundColor: colors.background,
-                        color: colors.primary
-                      }}
-                    />
-                  </div>
-                  
-                  <Button 
-                    type="submit"
-                    className="w-full py-3 rounded-xl text-lg font-semibold"
-                    style={{ 
-                      backgroundColor: colors.primary,
-                      color: colors.background
-                    }}
-                  >
-                    Anfrage absenden
-                  </Button>
-                </form>
-              </div>
-
-              {/* Alternative Contact */}
-              <div className="space-y-6">
-                <div 
-                  className="p-6 sm:p-8 rounded-3xl backdrop-blur-sm"
-                  style={{ backgroundColor: `${colors.background}20` }}
-                >
-                  <h3 className="text-xl font-bold mb-4" style={{ color: colors.background }}>
-                    Oder direkt anrufen
-                  </h3>
-                  <Button 
-                    onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="w-full py-3 rounded-xl text-lg font-semibold mb-4"
-                    style={{ 
-                      backgroundColor: colors.background,
-                      color: colors.primary
-                    }}
-                  >
-                    <CheckCircle className="mr-3 h-5 w-5" />
-                    Website optimieren
-                  </Button>
-                  
-                  <div className="space-y-3 text-sm" style={{ color: colors.background }}>
-                    <div className="flex items-center">
-                      <Phone className="w-4 h-4 mr-3" />
-                      <span>+49 (0) 631 123 456</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Mail className="w-4 h-4 mr-3" />
-                      <span>hallo@webklar.de</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Building className="w-4 h-4 mr-3" />
-                      <span>Kaiserslautern, Deutschland</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <AppointmentBooking />
             </div>
           </div>
         </section>
