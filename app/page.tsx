@@ -322,7 +322,7 @@ export default function AboutServicePage() {
             {/* Logo: absolut mittig auf Mobile, links auf Desktop */}
             <div>
               <button
-                className={`relative text-2xl sm:text-3xl font-bold select-none focus:outline-none md:static absolute left-1/2 -translate-x-1/2 md:translate-x-0 ${badgeVisible ? 'top-8' : 'top-0'} md:top-auto z-50 transition-all duration-150 float`}
+                className={`relative text-2xl sm:text-3xl font-bold select-none focus:outline-none md:static absolute left-1/2 -translate-x-1/2 md:translate-x-0 ${badgeVisible ? 'top-8' : 'top-0'} md:top-auto z-50 transition-all duration-150`}
                 style={{ color: colors.primary }}
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 aria-label="Zum Seitenanfang scrollen"

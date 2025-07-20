@@ -140,15 +140,7 @@
   background-size: 400% 400%;
 }
 
-/* Floating Animation */
-.float {
-  animation: float 6s ease-in-out infinite;
-}
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
-}
 
 /* Pulse Glow */
 .pulse-glow {
