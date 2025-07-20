@@ -1,3 +1,5 @@
+"use client"
+
 import { useAuth } from '@/hooks/useAuth'
 import AppointmentBooking from './AppointmentBooking'
 import MagicLinkAuth from './MagicLinkAuth'
