@@ -8,13 +8,8 @@ const nextConfig = {
   },
   images: { unoptimized: true },
   trailingSlash: true,
-  experimental: {
-    appDir: true,
-  },
-  // Disable static generation for pages that need client-side rendering
-  generateStaticParams: async () => {
-    return []
-  },
+  output: 'export',
+  distDir: 'out',
 };
 
 module.exports = nextConfig;
