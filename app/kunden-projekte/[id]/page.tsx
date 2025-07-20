@@ -78,12 +78,7 @@ interface CustomerDetailPageProps {
   };
 }
 
-// Generate static params for dynamic routes
-export async function generateStaticParams() {
-  // Return empty array to disable static generation for this route
-  // This allows the page to be rendered dynamically
-  return [];
-}
+
 
 export default function CustomerDetailPage({ params }: CustomerDetailPageProps) {
   const [customer, setCustomer] = useState<Customer | null>(null);
