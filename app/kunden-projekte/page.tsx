@@ -466,7 +466,7 @@ export default function KundenProjektePage() {
                       </div>
                       
                       <div className="flex flex-col items-end gap-3">
-                        {getStatusBadge(customer.appointment_status, customer.started_by)}
+                        {getStatusBadge(customer.appointment_status || 'pending', customer.started_by)}
                         {getStatusActions(customer)}
                       </div>
                     </div>
