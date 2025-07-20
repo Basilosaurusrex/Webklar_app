@@ -8,8 +8,6 @@ const nextConfig = {
   },
   images: { unoptimized: true },
   trailingSlash: true,
-  output: 'export',
-  distDir: 'out',
 };
 
 module.exports = nextConfig;
