@@ -175,7 +175,7 @@ export default function CustomerDetailPage({ params }: CustomerDetailPageProps) 
   };
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
       [field]: value
     }));
@@ -302,7 +302,7 @@ export default function CustomerDetailPage({ params }: CustomerDetailPageProps) 
             </div>
             
             <div className="flex items-center gap-3">
-              {getStatusBadge(customer.appointment_status, customer.started_by)}
+              {getStatusBadge(customer.appointment_status || 'pending', customer.started_by)}
               {customer.appointment_status === 'pending' && (
                 <Button 
                   onClick={() => updateAppointmentStatus('running')}
