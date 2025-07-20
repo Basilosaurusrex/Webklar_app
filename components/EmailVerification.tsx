@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react";
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/supabase';
 import { colors } from '@/lib/colors';
 
 interface EmailVerificationProps {
@@ -19,6 +19,8 @@ export default function EmailVerification({ email, onVerificationComplete, onBac
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [rateLimited, setRateLimited] = useState(false);
+  const [cooldownTime, setCooldownTime] = useState(0);
 
   const handleSendVerification = async () => {
     if (!verificationEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(verificationEmail)) {
@@ -26,27 +28,66 @@ export default function EmailVerification({ email, onVerificationComplete, onBac
       return;
     }
 
+    if (rateLimited) {
+      setError(`Rate Limit aktiv. Bitte warten Sie ${cooldownTime} Sekunden oder verwenden Sie die manuelle Bestätigung.`);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
+      console.log('=== MAGIC LINK VERIFICATION DEBUG ===');
+      console.log('Sending magic link to:', verificationEmail);
+      console.log('Current origin:', window.location.origin);
+      console.log('Redirect URL:', `${window.location.origin}/auth/callback`);
+      
+      // Use signInWithOtp with proper configuration for magic links
+      const { data, error } = await supabase.auth.signInWithOtp({
         email: verificationEmail,
         options: {
-          emailRedirectTo: `${window.location.origin}/verify-email`,
+          shouldCreateUser: true,
           data: {
             // Custom metadata for appointment booking
-            appointment_booking: true
+            appointment_booking: true,
+            email: verificationEmail
           }
         }
       });
 
+      console.log('Supabase magic link response:', { data, error });
+
       if (error) {
-        setError(error.message);
+        console.error('Supabase magic link error:', error);
+        
+        if (error.message.includes('rate limit')) {
+          setRateLimited(true);
+          setCooldownTime(60); // 60 seconds cooldown
+          
+          // Start countdown
+          const countdown = setInterval(() => {
+            setCooldownTime(prev => {
+              if (prev <= 1) {
+                clearInterval(countdown);
+                setRateLimited(false);
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+          
+          setError(`E-Mail-Rate-Limit erreicht. Bitte warten Sie 60 Sekunden oder verwenden Sie die manuelle Bestätigung.`);
+        } else if (error.message.includes('expired') || error.message.includes('invalid')) {
+          setError('Der Magic Link ist abgelaufen oder ungültig. Bitte fordere einen neuen Link an.');
+        } else {
+          setError(`Magic Link Fehler: ${error.message}`);
+        }
       } else {
+        console.log('Magic link sent successfully');
         setSent(true);
       }
     } catch (err) {
+      console.error('Unexpected error sending magic link:', err);
       setError('Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.');
     } finally {
       setLoading(false);
@@ -72,15 +113,21 @@ export default function EmailVerification({ email, onVerificationComplete, onBac
         <div className="flex items-center space-x-3 mb-6">
           <Mail className="w-6 h-6" style={{ color: colors.primary }} />
           <h3 className="text-xl font-bold" style={{ color: colors.primary }}>
-            E-Mail bestätigen
+            Magic Link senden
           </h3>
+        </div>
+        
+        <div className="mb-6 p-4 rounded-xl border-2 bg-blue-50 border-blue-500">
+          <p className="text-sm text-blue-700">
+            💡 <strong>Magic Link Flow:</strong> Wir senden einen Magic Link für die Authentifizierung.
+          </p>
         </div>
 
         {!sent ? (
           <div className="space-y-6">
             <p className="text-sm" style={{ color: colors.secondary }}>
-              Um Ihren Termin zu bestätigen, müssen wir Ihre E-Mail-Adresse verifizieren. 
-              Sie erhalten einen Magic Link per E-Mail.
+              Um Ihren Termin zu bestätigen, senden wir Ihnen einen Magic Link per E-Mail. 
+              Klicken Sie auf den Link, um sich zu authentifizieren.
             </p>
 
             <div>
@@ -102,6 +149,14 @@ export default function EmailVerification({ email, onVerificationComplete, onBac
               {error && (
                 <p className="text-red-500 text-sm mt-1">{error}</p>
               )}
+              
+              {rateLimited && (
+                <div className="mt-2 p-2 rounded-lg border-2 border-orange-300 bg-orange-50">
+                  <p className="text-xs text-orange-700">
+                    ⚠️ <strong>Rate Limit aktiv:</strong> Bitte warten Sie {cooldownTime} Sekunden oder verwenden Sie die manuelle Bestätigung.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="flex space-x-3">
@@ -120,7 +175,7 @@ export default function EmailVerification({ email, onVerificationComplete, onBac
               
               <Button 
                 onClick={handleSendVerification}
-                disabled={loading}
+                disabled={loading || rateLimited}
                 className="flex-1 rounded-xl flex items-center justify-center space-x-2"
                 style={{ 
                   backgroundColor: colors.primary,
@@ -130,12 +185,16 @@ export default function EmailVerification({ email, onVerificationComplete, onBac
                 {loading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Wird gesendet...</span>
+                    <span>Magic Link wird gesendet...</span>
+                  </>
+                ) : rateLimited ? (
+                  <>
+                    <span>Rate Limit ({cooldownTime}s)</span>
                   </>
                 ) : (
                   <>
                     <Mail className="w-4 h-4" />
-                    <span>Verifizierung senden</span>
+                    <span>Magic Link senden</span>
                   </>
                 )}
               </Button>
@@ -150,12 +209,12 @@ export default function EmailVerification({ email, onVerificationComplete, onBac
               </div>
               
               <h4 className="text-lg font-semibold mb-2" style={{ color: colors.primary }}>
-                E-Mail gesendet!
+                Magic Link gesendet!
               </h4>
               
               <p className="text-sm mb-4" style={{ color: colors.secondary }}>
-                Wir haben eine Verifizierungs-E-Mail an <strong>{verificationEmail}</strong> gesendet. 
-                Bitte überprüfen Sie Ihren Posteingang und klicken Sie auf den Magic Link.
+                Wir haben einen Magic Link an <strong>{verificationEmail}</strong> gesendet. 
+                Bitte überprüfen Sie Ihren Posteingang und klicken Sie auf den Link.
               </p>
 
               <div className="p-4 rounded-xl border-2" 
@@ -164,8 +223,8 @@ export default function EmailVerification({ email, onVerificationComplete, onBac
                      borderColor: colors.primary 
                    }}>
                 <p className="text-xs" style={{ color: colors.secondary }}>
-                  <strong>Tipp:</strong> Schauen Sie auch in Ihrem Spam-Ordner nach, 
-                  falls Sie die E-Mail nicht finden.
+                  <strong>Magic Link Flow:</strong> Klicken Sie auf den Link in der E-Mail, 
+                  um sich zu authentifizieren und den Termin zu bestätigen.
                 </p>
               </div>
             </div>
@@ -192,7 +251,7 @@ export default function EmailVerification({ email, onVerificationComplete, onBac
                 }}
               >
                 <CheckCircle className="w-4 h-4" />
-                <span>E-Mail bestätigt</span>
+                <span>Magic Link bestätigt</span>
               </Button>
             </div>
           </div>

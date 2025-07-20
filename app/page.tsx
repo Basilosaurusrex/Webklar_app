@@ -36,7 +36,8 @@ import {
 } from "lucide-react";
 import { colors } from "@/lib/colors";
 import PartnerMarquee from "@/components/PartnerMarquee";
-import AppointmentBooking from "@/components/AppointmentBooking";
+import ProtectedAppointmentBooking from "@/components/ProtectedAppointmentBooking";
+import AppointmentStatus from "@/components/AppointmentStatus";
 import Head from 'next/head';
 import Link from 'next/link';
 
@@ -799,7 +800,7 @@ export default function AboutServicePage() {
             <div className={`transition-all duration-1000 ${
               contactInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             }`}>
-              <AppointmentBooking />
+              <ProtectedAppointmentBooking />
             </div>
           </div>
         </section>
@@ -870,6 +871,9 @@ export default function AboutServicePage() {
 
         {/* Cookie Button */}
         <CookieButton />
+        
+        {/* Appointment Status */}
+        <AppointmentStatus />
       </div>
     </>
   );

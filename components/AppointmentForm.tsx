@@ -45,10 +45,19 @@ export default function AppointmentForm({ onSubmit, loading = false }: Appointme
   };
 
   const handleSlotSelect = (date: Date, time: string) => {
+    console.log('=== SLOT SELECTION DEBUG ===');
+    console.log('Selected date:', date);
+    console.log('Selected time:', time);
+    console.log('Date type:', typeof date);
+    console.log('Date instanceof Date:', date instanceof Date);
+    console.log('Date.toISOString():', date.toISOString());
+    
     if (time === '') {
       setSelectedSlot(null);
+      console.log('Slot deselected');
     } else {
       setSelectedSlot({ date, time });
+      console.log('Slot selected:', { date, time });
     }
   };
 
@@ -89,11 +98,22 @@ export default function AppointmentForm({ onSubmit, loading = false }: Appointme
     e.preventDefault();
     
     if (validateForm()) {
+      console.log('=== FORM SUBMIT DEBUG ===');
+      console.log('Form data:', formData);
+      console.log('Selected slot:', selectedSlot);
+      console.log('Selected slot date:', selectedSlot?.date);
+      console.log('Selected slot time:', selectedSlot?.time);
+      
       const submitData = {
         ...formData,
         termin_datum: selectedSlot?.date,
         termin_time: selectedSlot?.time
       };
+      
+      console.log('Submit data:', submitData);
+      console.log('Submit termin_datum:', submitData.termin_datum);
+      console.log('Submit termin_time:', submitData.termin_time);
+      
       onSubmit(submitData);
     }
   };

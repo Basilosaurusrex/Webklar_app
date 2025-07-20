@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, CheckCircle, X } from "lucide-react";
 import { colors } from '@/lib/colors';
+import { supabase } from '@/lib/supabaseClient';
 
 interface AppointmentSlot {
   date: Date;
@@ -56,23 +57,117 @@ export default function AppointmentCalendar({ onSlotSelect, selectedSlot }: Appo
     return dates;
   };
 
-  // Generate available slots (simplified without Supabase for now)
-  const generateAvailableSlots = () => {
+  // Generate available slots (with Supabase integration)
+  const generateAvailableSlots = async () => {
     const dates = generateAvailableDates();
     const timeSlots = generateTimeSlots();
     const slots: AppointmentSlot[] = [];
 
-    dates.forEach(date => {
-      timeSlots.forEach(time => {
-        // For now, make all slots available (we'll add Supabase integration later)
-        slots.push({
-          date: new Date(date),
-          time,
-          available: true,
-          booked: false
+    try {
+      // Get booked appointments from Supabase - look for termin_datum column
+      const { data: bookedAppointments, error } = await supabase
+        .from('kunden_projekte')
+        .select('termin_datum')
+        .not('termin_datum', 'is', null);
+
+      if (error) {
+        console.error('Error fetching booked appointments:', error);
+        console.log('Falling back to all available slots');
+        // Fallback to all available
+        dates.forEach(date => {
+          timeSlots.forEach(time => {
+            slots.push({
+              date: new Date(date),
+              time,
+              available: true,
+              booked: false
+            });
+          });
+        });
+      } else {
+        console.log('Found booked appointments:', bookedAppointments);
+        console.log('Number of booked appointments:', bookedAppointments?.length || 0);
+        
+        // Create a set of booked times for quick lookup
+        const bookedTimes = new Set();
+        bookedAppointments?.forEach(appointment => {
+          if (appointment.termin_datum) {
+            const appointmentDate = new Date(appointment.termin_datum);
+            console.log('Processing booked appointment:', appointment.termin_datum);
+            console.log('Appointment date object:', appointmentDate);
+            console.log('Appointment hours:', appointmentDate.getHours());
+            console.log('Appointment local time:', appointmentDate.toLocaleString('de-DE'));
+            
+            // Use local time consistently - don't convert to UTC
+            const year = appointmentDate.getFullYear();
+            const month = appointmentDate.getMonth();
+            const day = appointmentDate.getDate();
+            const hours = appointmentDate.getHours();
+            
+            // Create time string using local time components
+            const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+            const hourString = hours.toString().padStart(2, '0') + ':00';
+            const timeString = `${dateString}T${hourString}:00:00`;
+            bookedTimes.add(timeString);
+            console.log('Booked appointment found (local time):', timeString);
+          }
+        });
+        
+        console.log('All booked time strings:', Array.from(bookedTimes));
+
+        // Generate slots with availability check
+        dates.forEach(date => {
+          timeSlots.forEach(time => {
+            const [hours] = time.split(':').map(Number);
+            // Create slot datetime in local time
+            const slotDateTime = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, 0, 0, 0);
+            
+            // Create time string using local time components (same as booked appointments)
+            const year = slotDateTime.getFullYear();
+            const month = slotDateTime.getMonth();
+            const day = slotDateTime.getDate();
+            const slotHours = slotDateTime.getHours();
+            
+            const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+            const hourString = slotHours.toString().padStart(2, '0') + ':00';
+            const timeString = `${dateString}T${hourString}:00:00`;
+            
+            const isBooked = bookedTimes.has(timeString);
+            
+            console.log(`Slot ${dateString} ${time}:`, {
+              slotDateTime: slotDateTime.toISOString(),
+              timeString,
+              isBooked,
+              bookedTimes: Array.from(bookedTimes)
+            });
+            
+            if (isBooked) {
+              console.log('Slot is booked:', timeString);
+            }
+            
+            slots.push({
+              date: new Date(date),
+              time,
+              available: !isBooked,
+              booked: isBooked
+            });
+          });
+        });
+      }
+    } catch (err) {
+      console.error('Error checking availability:', err);
+      // Fallback to all available
+      dates.forEach(date => {
+        timeSlots.forEach(time => {
+          slots.push({
+            date: new Date(date),
+            time,
+            available: true,
+            booked: false
+          });
         });
       });
-    });
+    }
 
     setAvailableSlots(slots);
   };
@@ -133,9 +228,10 @@ export default function AppointmentCalendar({ onSlotSelect, selectedSlot }: Appo
           <div className="space-y-4">
             {Object.entries(groupedSlots).slice(0, 3).map(([dateKey, slots]) => {
               const date = new Date(dateKey);
-              const availableSlotsForDate = slots.filter(slot => slot.available);
+              // Show all slots, not just available ones
+              const allSlotsForDate = slots;
               
-              if (availableSlotsForDate.length === 0) return null;
+              if (allSlotsForDate.length === 0) return null;
 
               return (
                 <div key={dateKey} className="border rounded-xl p-4" 
@@ -144,23 +240,26 @@ export default function AppointmentCalendar({ onSlotSelect, selectedSlot }: Appo
                     {formatDate(date)}
                   </h4>
                   <div className="grid grid-cols-2 gap-2">
-                    {availableSlotsForDate.map((slot, index) => (
+                    {allSlotsForDate.map((slot, index) => (
                       <Button
                         key={index}
                         variant={isSlotSelected(slot) ? "default" : "outline"}
                         size="sm"
                         className="flex items-center space-x-2"
                         onClick={() => onSlotSelect(slot.date, slot.time)}
-                        disabled={slot.booked}
+                        disabled={slot.booked || !slot.available}
                         style={{
-                          backgroundColor: isSlotSelected(slot) ? colors.primary : 'transparent',
-                          color: isSlotSelected(slot) ? colors.background : colors.primary,
-                          borderColor: colors.tertiary
+                          backgroundColor: isSlotSelected(slot) ? colors.primary : 
+                                       slot.booked ? '#f3f4f6' : 'transparent',
+                          color: isSlotSelected(slot) ? colors.background : 
+                                slot.booked ? '#9ca3af' : colors.primary,
+                          borderColor: slot.booked ? '#d1d5db' : colors.tertiary
                         }}
                       >
                         <Clock className="w-4 h-4" />
                         <span>{slot.time}</span>
                         {isSlotSelected(slot) && <CheckCircle className="w-4 h-4" />}
+                        {slot.booked && <span className="text-xs">(Gebucht)</span>}
                       </Button>
                     ))}
                   </div>

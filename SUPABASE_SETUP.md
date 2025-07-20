@@ -1,11 +1,13 @@
-# Supabase Setup für Terminbuchung
+# Supabase Setup Guide
 
-## 1. Datenbank-Spalte hinzufügen
+## 1. Database Migration
 
-Führe folgendes SQL in der Supabase SQL Editor aus:
+Führe diese SQL-Befehle in deiner Supabase SQL Editor aus:
 
 ```sql
 -- Add termin_datum column to kunden_projekte table
+-- This column will store the consultation appointment date/time
+
 ALTER TABLE kunden_projekte 
 ADD COLUMN termin_datum timestamp;
 
@@ -16,55 +18,45 @@ COMMENT ON COLUMN kunden_projekte.termin_datum IS 'Beratungstermin - wann ist da
 CREATE INDEX idx_termin_datum ON kunden_projekte(termin_datum);
 ```
 
-## 2. Supabase Auth konfigurieren
+## 2. Authentication Settings
 
-### 2.1 Authentication Settings
-1. Gehe zu **Authentication > Settings** in deinem Supabase Dashboard
-2. Aktiviere **Email Auth** unter **Auth Providers**
-3. Konfiguriere **Site URL**: `http://localhost:3000` (für Entwicklung)
-4. Setze **Redirect URLs**: `http://localhost:3000/verify-email`
+### Email Auth aktivieren:
+1. Gehe zu **Authentication → Settings**
+2. Aktiviere **Email Auth**
+3. Stelle sicher, dass **"Enable email confirmations"** aktiviert ist
 
-### 2.2 Email Templates anpassen (optional)
-1. Gehe zu **Authentication > Email Templates**
-2. Passe die **Magic Link** E-Mail an:
+### Email Templates anpassen:
+1. Gehe zu **Authentication → Email Templates**
+2. Wähle **"Magic Link"** Template
+3. Passe den Inhalt an:
 
-**Subject:**
-```
-Bestätigen Sie Ihren Termin bei Webklar
-```
-
-**Body:**
+**Subject:** `Terminbestätigung - Webklar`
+**Content:**
 ```html
-<h2>Terminbestätigung bei Webklar</h2>
-<p>Vielen Dank für Ihre Terminanfrage!</p>
-<p>Bitte klicken Sie auf den folgenden Link, um Ihre E-Mail-Adresse zu bestätigen und Ihren Termin zu bestätigen:</p>
-<p><a href="{{ .ConfirmationURL }}">Termin bestätigen</a></p>
+<h2>Terminbestätigung</h2>
+<p>Vielen Dank für Ihre Terminanfrage bei Webklar!</p>
+<p>Klicken Sie auf den folgenden Link, um Ihren Termin zu bestätigen:</p>
+<a href="{{ .ConfirmationURL }}">Termin bestätigen</a>
 <p>Falls der Link nicht funktioniert, kopieren Sie diese URL in Ihren Browser:</p>
 <p>{{ .ConfirmationURL }}</p>
 <p>Mit freundlichen Grüßen,<br>Ihr Webklar Team</p>
 ```
 
-## 3. Row Level Security (RLS) konfigurieren
+## 3. Row Level Security (RLS)
 
-### 3.1 RLS aktivieren
+Führe diese SQL-Befehle aus, um RLS-Policies zu erstellen:
+
 ```sql
 -- Enable RLS on kunden_projekte table
 ALTER TABLE kunden_projekte ENABLE ROW LEVEL SECURITY;
-```
 
-### 3.2 Policies erstellen
-```sql
--- Allow authenticated users to insert appointments
-CREATE POLICY "Users can insert their own appointments" ON kunden_projekte
+-- Create policy for inserting appointments (public access)
+CREATE POLICY "Allow public appointment insert" ON kunden_projekte
 FOR INSERT WITH CHECK (true);
 
--- Allow reading appointments (for availability checking)
-CREATE POLICY "Anyone can read appointments" ON kunden_projekte
-FOR SELECT USING (true);
-
--- Optional: Allow users to update their own appointments
-CREATE POLICY "Users can update their own appointments" ON kunden_projekte
-FOR UPDATE USING (true);
+-- Create policy for reading appointments (optional - for admin access)
+CREATE POLICY "Allow authenticated read" ON kunden_projekte
+FOR SELECT USING (auth.role() = 'authenticated');
 ```
 
 ## 4. Environment Variables
@@ -76,61 +68,65 @@ NEXT_PUBLIC_SUPABASE_URL=https://rndjwuupvsoxwjqozomf.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJuZGp3dXVwdnNveHdqcW96b21mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2NjI0NjcsImV4cCI6MjA2ODIzODQ2N30.0SGmIpzMgPSXXEUurRdG3IJCutJSdoP1ByJaKAENw3Q
 ```
 
-## 5. Testing
+## 5. SMTP Configuration Fix
 
-### 5.1 Lokaler Test
-1. Starte die Entwicklungsumgebung: `npm run dev`
-2. Gehe zu `http://localhost:3000`
-3. Teste die Terminbuchung
+### Problem mit Port 465:
+Deine aktuelle SMTP-Konfiguration verwendet Port 465 mit Implicit TLS, was bei Supabase manchmal Probleme verursacht.
 
-### 5.2 E-Mail-Verifizierung testen
-1. Verwende eine echte E-Mail-Adresse für Tests
-2. Überprüfe den Spam-Ordner
-3. Klicke auf den Magic Link in der E-Mail
+### Lösung:
+1. Gehe zu **Authentication → Settings → Email Auth**
+2. Klicke auf **"Enable Custom SMTP"**
+3. Ändere die Einstellungen:
 
-## 6. Produktions-Deployment
+**SMTP Settings:**
+- **Host:** `smtp.porkbun.com`
+- **Port:** `587` (statt 465)
+- **Security:** `STARTTLS`
+- **Username:** `support@webklar.com`
+- **Password:** [dein Passwort]
+- **Sender Email:** `support@webklar.com`
+- **Sender Name:** `Webklar`
+- **Rate Limit:** `60` Sekunden
 
-### 6.1 Site URL anpassen
-Ändere die Site URL in Supabase auf deine Produktions-Domain:
-- **Site URL**: `https://deine-domain.com`
-- **Redirect URLs**: `https://deine-domain.com/verify-email`
+### Alternative Ports testen:
+Falls Port 587 nicht funktioniert, versuche:
+- **Port:** `50587` (Alternative STARTTLS)
+- **Port:** `465` (falls 587 nicht funktioniert)
 
-### 6.2 SSL/HTTPS
-Stelle sicher, dass deine Domain HTTPS verwendet, da Magic Links nur über HTTPS funktionieren.
+## 6. Testing
+
+### Test-Modus aktivieren:
+```typescript
+// In components/AppointmentBooking.tsx
+const [testMode, setTestMode] = useState(true); // Für schnelles Testing
+```
+
+### E-Mail-Verifizierung testen:
+1. Fülle das Termin-Formular aus
+2. Klicke auf "Verifizierung senden"
+3. Prüfe deine E-Mails (auch Spam-Ordner)
+4. Klicke auf den Magic Link
+
+### Rate Limit umgehen:
+Falls Rate Limits auftreten:
+- Warte 60 Sekunden
+- Verwende "Manuelle Bestätigung" für Tests
+- Aktiviere Test-Modus für direkte Speicherung
 
 ## 7. Troubleshooting
 
-### Häufige Probleme:
+### E-Mails kommen nicht an:
+1. **SMTP-Port ändern:** Versuche Port 587 statt 465
+2. **Domain-Verifizierung:** Prüfe DNS-Einstellungen
+3. **Spam-Ordner:** Prüfe auch Spam/Junk-Ordner
+4. **Rate Limits:** Warte 60 Sekunden zwischen Versuchen
 
-1. **E-Mail kommt nicht an**
-   - Überprüfe Spam-Ordner
-   - Teste mit verschiedenen E-Mail-Providern
-   - Überprüfe Supabase E-Mail-Logs
+### Rate Limit Fehler:
+- Warte 60 Sekunden
+- Verwende manuelle Bestätigung
+- Aktiviere Test-Modus
 
-2. **Magic Link funktioniert nicht**
-   - Überprüfe Redirect URLs in Supabase
-   - Stelle sicher, dass HTTPS verwendet wird
-   - Überprüfe Browser-Konsole für Fehler
-
-3. **Termin wird nicht gespeichert**
-   - Überprüfe RLS Policies
-   - Überprüfe Browser-Konsole für Fehler
-   - Überprüfe Supabase Logs
-
-## 8. Sicherheitshinweise
-
-- Magic Links sind sicherer als Passwörter
-- E-Mails werden automatisch verifiziert
-- Keine doppelten Termine möglich
-- Automatische Verfügbarkeitsprüfung
-
-## 9. Erweiterte Features
-
-### 9.1 E-Mail-Benachrichtigungen
-Du kannst Supabase Functions verwenden, um automatische E-Mail-Benachrichtigungen zu senden.
-
-### 9.2 Kalender-Integration
-Für erweiterte Kalender-Features kannst du Google Calendar API integrieren.
-
-### 9.3 Admin-Dashboard
-Erstelle eine Admin-Seite zum Verwalten der Termine. 
+### Datenbank-Fehler:
+- Führe die Migration aus
+- Prüfe RLS-Policies
+- Teste mit "Datenbank-Verbindung testen" Button 
