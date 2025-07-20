@@ -327,11 +327,7 @@ export default function AboutServicePage() {
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 aria-label="Zum Seitenanfang scrollen"
               >
-                <span className="relative z-10 text-glow">Webklar</span>
-                <div 
-                  className="absolute -inset-2 rounded-xl blur-sm opacity-20"
-                  style={{ backgroundColor: colors.secondary }}
-                ></div>
+                <span>Webklar</span>
               </button>
             </div>
             {/* Navigation Buttons (ohne Startseite) */}
@@ -367,39 +363,14 @@ export default function AboutServicePage() {
               <source src="/path/to/your/background-video.mp4" type="video/mp4" />
             </video>
             <div 
-              className="absolute inset-0 backdrop-blur-sm animated-gradient"
+              className="absolute inset-0 backdrop-blur-sm"
               style={{ 
                 background: `linear-gradient(135deg, ${colors.primary}CC, ${colors.secondary}CC)`
               }}
             ></div>
           </div>
 
-          {/* Animated Background Lines */}
-          <div className="absolute inset-0 pointer-events-none z-10 opacity-30">
-            <svg className="w-full h-full">
-              <defs>
-                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor={colors.tertiary} />
-                  <stop offset="50%" stopColor={colors.secondary} />
-                  <stop offset="100%" stopColor={colors.primary} />
-                </linearGradient>
-              </defs>
-              <path
-                d={`M 0,${100 + scrollY * 0.1} Q 400,${200 + scrollY * 0.15} 800,${150 + scrollY * 0.1} T 1600,${100 + scrollY * 0.05}`}
-                stroke="url(#lineGradient)"
-                strokeWidth="2"
-                fill="none"
-                className="animate-pulse"
-              />
-              <path
-                d={`M 0,${300 + scrollY * 0.08} Q 600,${400 + scrollY * 0.12} 1200,${350 + scrollY * 0.08} T 2400,${300 + scrollY * 0.04}`}
-                stroke="url(#lineGradient)"
-                strokeWidth="1"
-                fill="none"
-                opacity="0.6"
-              />
-            </svg>
-          </div>
+
 
           <div ref={heroRef} className="relative z-20 px-4 sm:px-8 py-32 max-w-7xl mx-auto text-center">
             <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-6 sm:mb-8 text-xs sm:text-sm">
@@ -421,33 +392,14 @@ export default function AboutServicePage() {
             <h1 className={`text-4xl sm:text-6xl md:text-8xl font-bold mb-6 sm:mb-8 transition-all duration-1000 ${
               heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             }`}>
-              <span 
-                className="relative inline-block text-glow"
-                style={{ color: colors.background }}
-              >
+              <span style={{ color: colors.background }}>
                 Maßgeschneiderte
-                <div 
-                  className="absolute -inset-4 rounded-2xl blur-xl opacity-20"
-                  style={{ backgroundColor: colors.tertiary }}
-                ></div>
               </span>{" "}
-              <span className="text-glow" style={{ color: colors.background }}>Websites für</span>
+              <span style={{ color: colors.background }}>Websites für</span>
               <br />
-              <span className="text-glow" style={{ color: colors.background }}>kleine{" "}</span>
-              <span 
-                className="relative inline-block text-glow"
-                style={{ color: colors.background }}
-              >
+              <span style={{ color: colors.background }}>kleine{" "}</span>
+              <span style={{ color: colors.background }}>
                 Unternehmen
-                <svg className="absolute -bottom-2 sm:-bottom-4 left-0 w-full h-4 sm:h-6" viewBox="0 0 400 20">
-                  <path
-                    d="M 0,15 Q 200,5 400,15"
-                    stroke={colors.tertiary}
-                    strokeWidth="4"
-                    fill="none"
-                    className="animate-pulse"
-                  />
-                </svg>
               </span>
             </h1>
             
@@ -504,24 +456,7 @@ export default function AboutServicePage() {
             <div className="grid lg:grid-cols-2 gap-8 sm:gap-16 items-center">
               <div className="relative order-2 lg:order-1">
                 {/* Animated decorative elements */}
-                <div 
-                  className="absolute -top-10 -left-10 w-24 sm:w-32 h-24 sm:h-32 border-2 rounded-full opacity-50 animate-pulse"
-                  style={{ borderColor: colors.secondary }}
-                ></div>
-                <div 
-                  className="absolute -bottom-10 -right-10 w-16 sm:w-24 h-16 sm:h-24 border-2 rounded-full opacity-50 animate-bounce"
-                  style={{ borderColor: colors.tertiary }}
-                ></div>
-                
-                <svg className="w-full h-48 sm:h-64 opacity-20">
-                  <path
-                    d="M 50,200 Q 150,50 250,150 T 450,100"
-                    stroke={colors.secondary}
-                    strokeWidth="3"
-                    fill="none"
-                    className="animate-pulse"
-                  />
-                </svg>
+
               </div>
               
               <div className={`order-1 lg:order-2 transition-all duration-1000 ${
@@ -541,14 +476,7 @@ export default function AboutServicePage() {
                       style={{ borderColor: colors.secondary }}
                     ></div>
                   </span>
-                  <svg className="block mt-2 w-32 h-3" viewBox="0 0 128 12">
-                    <path
-                      d="M 0,8 Q 64,2 128,8"
-                      stroke={colors.secondary}
-                      strokeWidth="3"
-                      fill="none"
-                    />
-                  </svg>
+
                 </h2>
                 
                 <p 

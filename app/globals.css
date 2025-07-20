@@ -134,17 +134,10 @@
   will-change: transform;
 }
 
-/* Animated Gradient Background */
+/* Static Gradient Background */
 .animated-gradient {
   background: linear-gradient(-45deg, #22c55e, #16a34a, #15803d, #166534);
   background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
-}
-
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
 }
 
 /* Floating Animation */
