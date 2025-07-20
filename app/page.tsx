@@ -153,7 +153,7 @@ function TimedBadge({ onHide }: { onHide: () => void }) {
     if (!visible) return;
     let start = Date.now();
     let raf: number;
-    const duration = 15000;
+    const duration = 5000; // 5 Sekunden
     function animate() {
       const elapsed = Date.now() - start;
       setProgress(Math.min(elapsed / duration, 1));
@@ -328,6 +328,20 @@ export default function AboutServicePage() {
                 aria-label="Zum Seitenanfang scrollen"
               >
                 <span>Webklar</span>
+                {/* Zentrierter Logo-Hintergrund während Badge-Anzeige */}
+                {badgeVisible && (
+                  <div 
+                    className="absolute -inset-4 rounded-xl blur-xl opacity-30 transition-all duration-300"
+                    style={{ 
+                      backgroundColor: colors.secondary,
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: '120%',
+                      height: '120%'
+                    }}
+                  ></div>
+                )}
               </button>
             </div>
             {/* Navigation Buttons (ohne Startseite) */}
