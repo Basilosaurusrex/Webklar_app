@@ -213,8 +213,8 @@ export default function EmailVerification({ email, onVerificationComplete, onBac
               </h4>
               
               <p className="text-sm mb-4" style={{ color: colors.secondary }}>
-                Wir haben einen Magic Link an <strong>{verificationEmail}</strong> gesendet. 
-                Bitte überprüfen Sie Ihren Posteingang und klicken Sie auf den Link.
+                Wir haben einen Bestätigungslink an <strong>{verificationEmail}</strong> gesendet. 
+                Bitte überprüfen Sie Ihren Posteingang und klicken Sie auf den Link in der E-Mail.
               </p>
 
               <div className="p-4 rounded-xl border-2" 
@@ -223,8 +223,8 @@ export default function EmailVerification({ email, onVerificationComplete, onBac
                      borderColor: colors.primary 
                    }}>
                 <p className="text-xs" style={{ color: colors.secondary }}>
-                  <strong>Magic Link Flow:</strong> Klicken Sie auf den Link in der E-Mail, 
-                  um sich zu authentifizieren und den Termin zu bestätigen.
+                  <strong>Bestätigung:</strong> Der Link in der E-Mail bestätigt automatisch Ihren Termin. 
+                  Nach dem Klick können Sie hier auf "E-Mail bestätigt" klicken.
                 </p>
               </div>
             </div>
@@ -251,7 +251,7 @@ export default function EmailVerification({ email, onVerificationComplete, onBac
                 }}
               >
                 <CheckCircle className="w-4 h-4" />
-                <span>Magic Link bestätigt</span>
+                <span>E-Mail bestätigt</span>
               </Button>
             </div>
           </div>
