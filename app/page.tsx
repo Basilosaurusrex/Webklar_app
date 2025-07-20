@@ -322,12 +322,12 @@ export default function AboutServicePage() {
             {/* Logo: absolut mittig auf Mobile, links auf Desktop */}
             <div>
               <button
-                className={`relative text-2xl sm:text-3xl font-bold select-none focus:outline-none md:static absolute left-1/2 -translate-x-1/2 md:translate-x-0 ${badgeVisible ? 'top-8' : 'top-0'} md:top-auto z-50 transition-all duration-150`}
+                className={`relative text-2xl sm:text-3xl font-bold select-none focus:outline-none md:static absolute left-1/2 -translate-x-1/2 md:translate-x-0 ${badgeVisible ? 'top-8' : 'top-0'} md:top-auto z-50 transition-all duration-150 float`}
                 style={{ color: colors.primary }}
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 aria-label="Zum Seitenanfang scrollen"
               >
-                <span className="relative z-10">Webklar</span>
+                <span className="relative z-10 text-glow">Webklar</span>
                 <div 
                   className="absolute -inset-2 rounded-xl blur-sm opacity-20"
                   style={{ backgroundColor: colors.secondary }}
@@ -336,15 +336,15 @@ export default function AboutServicePage() {
             </div>
             {/* Navigation Buttons (ohne Startseite) */}
             <div className="hidden md:flex space-x-6 flex-1 justify-center">
-              <Button variant="ghost" className="rounded-full font-medium hover:scale-105 transition-all duration-300" style={{ color: colors.primary }} onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}>Über uns</Button>
-              <Button variant="ghost" className="rounded-full font-medium hover:scale-105 transition-all duration-300" style={{ color: colors.primary }} onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}>Leistungen</Button>
-              <Button variant="ghost" className="rounded-full font-medium hover:scale-105 transition-all duration-300" style={{ color: colors.primary }} onClick={() => document.getElementById('process')?.scrollIntoView({ behavior: 'smooth' })}>Unsere Abläufe</Button>
-              <Button variant="ghost" className="rounded-full font-medium hover:scale-105 transition-all duration-300" style={{ color: colors.primary }} onClick={() => document.getElementById('references')?.scrollIntoView({ behavior: 'smooth' })}>Referenzen</Button>
+              <Button variant="ghost" className="rounded-full font-medium btn-enhanced hover-lift" style={{ color: colors.primary }} onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}>Über uns</Button>
+              <Button variant="ghost" className="rounded-full font-medium btn-enhanced hover-lift" style={{ color: colors.primary }} onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}>Leistungen</Button>
+              <Button variant="ghost" className="rounded-full font-medium btn-enhanced hover-lift" style={{ color: colors.primary }} onClick={() => document.getElementById('process')?.scrollIntoView({ behavior: 'smooth' })}>Unsere Abläufe</Button>
+              <Button variant="ghost" className="rounded-full font-medium btn-enhanced hover-lift" style={{ color: colors.primary }} onClick={() => document.getElementById('references')?.scrollIntoView({ behavior: 'smooth' })}>Referenzen</Button>
             </div>
             {/* Kontakt-Button nur auf Desktop */}
             <div className="hidden md:block flex-1 text-right">
               <Link href="/kontakte">
-                <Button className="rounded-full font-semibold px-4 sm:px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105" style={{ backgroundColor: colors.primary, color: colors.background }}>
+                <Button className="rounded-full font-semibold px-4 sm:px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 btn-enhanced pulse-glow" style={{ backgroundColor: colors.primary, color: colors.background }}>
                   Kontakt
                 </Button>
               </Link>
@@ -367,7 +367,7 @@ export default function AboutServicePage() {
               <source src="/path/to/your/background-video.mp4" type="video/mp4" />
             </video>
             <div 
-              className="absolute inset-0 backdrop-blur-sm"
+              className="absolute inset-0 backdrop-blur-sm animated-gradient"
               style={{ 
                 background: `linear-gradient(135deg, ${colors.primary}CC, ${colors.secondary}CC)`
               }}
@@ -422,7 +422,7 @@ export default function AboutServicePage() {
               heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             }`}>
               <span 
-                className="relative inline-block"
+                className="relative inline-block text-glow"
                 style={{ color: colors.background }}
               >
                 Maßgeschneiderte
@@ -431,11 +431,11 @@ export default function AboutServicePage() {
                   style={{ backgroundColor: colors.tertiary }}
                 ></div>
               </span>{" "}
-              <span style={{ color: colors.background }}>Websites für</span>
+              <span className="text-glow" style={{ color: colors.background }}>Websites für</span>
               <br />
-              <span style={{ color: colors.background }}>kleine{" "}</span>
+              <span className="text-glow" style={{ color: colors.background }}>kleine{" "}</span>
               <span 
-                className="relative inline-block"
+                className="relative inline-block text-glow"
                 style={{ color: colors.background }}
               >
                 Unternehmen
@@ -462,7 +462,7 @@ export default function AboutServicePage() {
             }`}>
               <Button 
                 onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 rounded-full flex items-center justify-center space-x-3 text-base sm:text-lg font-semibold shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 rounded-full flex items-center justify-center space-x-3 text-base sm:text-lg font-semibold shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105 btn-enhanced hover-lift"
                 style={{ 
                   backgroundColor: colors.background,
                   color: colors.primary
@@ -595,7 +595,7 @@ export default function AboutServicePage() {
               {services.map((service, index) => (
                 <div
                   key={index}
-                  className={`p-4 sm:p-6 rounded-xl sm:rounded-2xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl cursor-pointer backdrop-blur-sm ${
+                  className={`p-4 sm:p-6 rounded-xl sm:rounded-2xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl cursor-pointer backdrop-blur-sm card-hover glass-enhanced ${
                     servicesInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
                   }`}
                   style={{ 
@@ -646,7 +646,7 @@ export default function AboutServicePage() {
               {processSteps.map((step, index) => (
                 <div
                   key={index}
-                  className={`flex flex-col sm:flex-row items-start gap-4 sm:gap-6 p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-lg transition-all duration-1000 hover:scale-105 backdrop-blur-sm ${
+                  className={`flex flex-col sm:flex-row items-start gap-4 sm:gap-6 p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-lg transition-all duration-1000 hover:scale-105 backdrop-blur-sm card-hover hover-lift ${
                     processInView ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'
                   }`}
                   style={{ 
@@ -868,6 +868,9 @@ export default function AboutServicePage() {
             </div>
           </div>
         </footer>
+
+        {/* Film Grain Effect */}
+        <div className="film-grain"></div>
 
         {/* Cookie Button */}
         <CookieButton />
