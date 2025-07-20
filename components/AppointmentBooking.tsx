@@ -507,49 +507,69 @@ export default function AppointmentBooking() {
         </div>
       )}
 
-      {/* Step Indicator */}
+      {/* Enhanced Step Indicator */}
       <div className="mb-8">
-        <div className="flex items-center justify-center space-x-4">
-          <div className={`flex items-center space-x-2 ${
+        <div className="flex items-center justify-center space-x-2 sm:space-x-4">
+          {/* Step 1 */}
+          <div className={`flex flex-col items-center space-y-2 ${
             currentStep === 'form' ? 'text-primary' : 'text-gray-400'
           }`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              currentStep === 'form' ? 'bg-primary text-white' : 'bg-gray-200'
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+              currentStep === 'form' 
+                ? 'bg-primary text-white shadow-lg scale-110' 
+                : 'bg-gray-200 text-gray-500'
             }`}>
-              1
+              <Calendar className="w-5 h-5" />
             </div>
-            <span className="hidden sm:inline">Termin auswählen</span>
+            <span className="text-xs sm:text-sm font-medium text-center">Termin auswählen</span>
           </div>
           
-          <div className={`w-8 h-1 rounded ${
-            currentStep === 'verification' || currentStep === 'success' ? 'bg-primary' : 'bg-gray-200'
+          {/* Connector 1 */}
+          <div className={`w-8 sm:w-12 h-1 rounded-full transition-all duration-300 ${
+            currentStep === 'verification' || currentStep === 'success' 
+              ? 'bg-primary' 
+              : 'bg-gray-200'
           }`}></div>
           
-          <div className={`flex items-center space-x-2 ${
-            currentStep === 'verification' ? 'text-primary' : currentStep === 'success' ? 'text-green-600' : 'text-gray-400'
+          {/* Step 2 */}
+          <div className={`flex flex-col items-center space-y-2 ${
+            currentStep === 'verification' 
+              ? 'text-primary' 
+              : currentStep === 'success' 
+                ? 'text-green-600' 
+                : 'text-gray-400'
           }`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              currentStep === 'verification' ? 'bg-primary text-white' : 
-              currentStep === 'success' ? 'bg-green-600 text-white' : 'bg-gray-200'
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+              currentStep === 'verification' 
+                ? 'bg-primary text-white shadow-lg scale-110' 
+                : currentStep === 'success'
+                  ? 'bg-green-600 text-white shadow-lg'
+                  : 'bg-gray-200 text-gray-500'
             }`}>
-              2
+              <Mail className="w-5 h-5" />
             </div>
-            <span className="hidden sm:inline">E-Mail bestätigen</span>
+            <span className="text-xs sm:text-sm font-medium text-center">E-Mail bestätigen</span>
           </div>
           
-          <div className={`w-8 h-1 rounded ${
-            currentStep === 'success' ? 'bg-green-600' : 'bg-gray-200'
+          {/* Connector 2 */}
+          <div className={`w-8 sm:w-12 h-1 rounded-full transition-all duration-300 ${
+            currentStep === 'success' 
+              ? 'bg-green-600' 
+              : 'bg-gray-200'
           }`}></div>
           
-          <div className={`flex items-center space-x-2 ${
+          {/* Step 3 */}
+          <div className={`flex flex-col items-center space-y-2 ${
             currentStep === 'success' ? 'text-green-600' : 'text-gray-400'
           }`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              currentStep === 'success' ? 'bg-green-600 text-white' : 'bg-gray-200'
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+              currentStep === 'success' 
+                ? 'bg-green-600 text-white shadow-lg scale-110' 
+                : 'bg-gray-200 text-gray-500'
             }`}>
-              3
+              <CheckCircle className="w-5 h-5" />
             </div>
-            <span className="hidden sm:inline">Bestätigt</span>
+            <span className="text-xs sm:text-sm font-medium text-center">Bestätigt</span>
           </div>
         </div>
       </div>
