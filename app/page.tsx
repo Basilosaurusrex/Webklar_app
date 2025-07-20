@@ -798,7 +798,7 @@ export default function AboutServicePage() {
         </footer>
 
         {/* Film Grain Effect */}
-        <div className="film-grain"></div>
+
 
         {/* Cookie Button */}
         <CookieButton />
