@@ -310,11 +310,11 @@ export default function AppointmentForm({ onSubmit, loading = false }: Appointme
             <div className="space-y-3 text-sm" style={{ color: colors.background }}>
               <div className="flex items-center">
                 <Phone className="w-4 h-4 mr-3" />
-                <span>+49 (0) 631 123 456</span>
+                <span>+49 170 4969375</span>
               </div>
               <div className="flex items-center">
                 <Mail className="w-4 h-4 mr-3" />
-                <span>hallo@webklar.de</span>
+                <span>support@webklar.com</span>
               </div>
               <div className="flex items-center">
                 <Building className="w-4 h-4 mr-3" />
